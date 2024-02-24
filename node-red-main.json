@@ -1,0 +1,858 @@
+[
+    {
+        "id": "de645dbbe3110559",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "3f86de97694d3b21",
+        "type": "mqtt in",
+        "z": "de645dbbe3110559",
+        "name": "humidity",
+        "topic": "authIoTTestTopic/humidity",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "930e75eab1ea7ac4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 340,
+        "y": 220,
+        "wires": [
+            [
+                "d2e66d59ed893837",
+                "311edcfc634550b4",
+                "b76596b2c828b0c0"
+            ]
+        ]
+    },
+    {
+        "id": "178c7f1bb4a31064",
+        "type": "mqtt in",
+        "z": "de645dbbe3110559",
+        "name": "ctemp",
+        "topic": "authIoTTestTopic/ctemp",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "930e75eab1ea7ac4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 330,
+        "y": 420,
+        "wires": [
+            [
+                "36eea6a8405963be",
+                "bc7012866a23ccaf",
+                "311edcfc634550b4"
+            ]
+        ]
+    },
+    {
+        "id": "d6189de7d1a95028",
+        "type": "mqtt in",
+        "z": "de645dbbe3110559",
+        "name": "cheatindex",
+        "topic": "authIoTTestTopic/cheatindex",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "930e75eab1ea7ac4",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 340,
+        "y": 320,
+        "wires": [
+            [
+                "fd45c8c633e00833",
+                "975229bd23c0728f",
+                "311edcfc634550b4"
+            ]
+        ]
+    },
+    {
+        "id": "6a783e9145fb0bfc",
+        "type": "debug",
+        "z": "de645dbbe3110559",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1040,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "bc7012866a23ccaf",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "Parse data (temp)",
+        "func": "var temp = msg.payload;\nmsg.payload = temp; // Ensure payload is the value you want to pass\nreturn msg; // Return the entire message object\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 540,
+        "wires": [
+            [
+                "8171f9dd7b34c192",
+                "fe2e0a802fd88fbb"
+            ]
+        ]
+    },
+    {
+        "id": "975229bd23c0728f",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "Parse data (heat index)",
+        "func": "var heat = msg.payload;\nmsg.payload = heat; \nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 400,
+        "wires": [
+            [
+                "8171f9dd7b34c192"
+            ]
+        ]
+    },
+    {
+        "id": "8171f9dd7b34c192",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "Send data ",
+        "func": "let theTimeStamp = Math.round(Date.now() / 1000);\n// Retrieve context variables\nlet temp = flow.get(\"temp\") || null;\nlet heatIndex = flow.get(\"heatIndex\") || null;\n\n// Determine message topic and store the value\nif (msg.topic === \"authIoTTestTopic/ctemp\") {\n    temp = msg.payload;\n    flow.set(\"temp\", temp);\n} else if (msg.topic === \"authIoTTestTopic/cheatindex\") {\n    heatIndex = msg.payload;\n    flow.set(\"heatIndex\", heatIndex);\n}\n\n// Check if both values are available\nif (temp !== null && heatIndex !== null) {\n    // Construct SQL query\n    let sql = `INSERT INTO sensor_data (timestamp, temperature, heat_index) VALUES ('${theTimeStamp}', '${temp}', '${heatIndex}');`;\n    msg.topic = sql; // Ensure to set your SQL query in msg.payload or msg.topic as per your requirement\n    // Reset context variables\n    flow.set(\"temp\", null);\n    flow.set(\"heatIndex\", null);\n    return msg; // Return the msg object with SQL query\n}\n\n// Return null if both values are not yet received\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 910,
+        "y": 460,
+        "wires": [
+            [
+                "2e05dd48393bdc0e"
+            ]
+        ]
+    },
+    {
+        "id": "f04c0f48ab9728e7",
+        "type": "debug",
+        "z": "de645dbbe3110559",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 880,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "5b8365ed3f01e60b",
+        "type": "debug",
+        "z": "de645dbbe3110559",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1040,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "45fa3ed2538f6f71",
+        "type": "debug",
+        "z": "de645dbbe3110559",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "fb01c0ae0fffa3eb",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "passToDB",
+        "func": "let theTimeStamp = Math.round(Date.now() / 1000);\n\nlet tempValues = flow.get(\"tempValues\") || [];\nlet heatIndexValues = flow.get(\"heatIndexValues\") || [];\nlet humidityValues = flow.get(\"humidityValues\") || [];\n\n// Calculate averages\nlet averageTemp = tempValues.reduce((acc, val) => acc + val, 0) / tempValues.length || 0;\nlet averageHeatIndex = heatIndexValues.reduce((acc, val) => acc + val, 0) / heatIndexValues.length || 0;\nlet averageHumidity = humidityValues.reduce((acc, val) => acc + val, 0) / humidityValues.length || 0;\n\n// Construct SQL query to insert averages\nlet sql = `INSERT INTO hourly_averages (timestamp, average_temp, average_heat_index, average_humidity) VALUES (${theTimeStamp}, ${averageTemp}, ${averageHeatIndex}, ${averageHumidity});`;\n\n// Reset the arrays in the context for the next hour\nflow.set(\"tempValues\", []);\nflow.set(\"heatIndexValues\", []);\nflow.set(\"humidityValues\", []);\n\n// Prepare the message object to send to the SQLite node\nmsg.topic = sql;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 40,
+        "wires": [
+            [
+                "aa36fc69e8b38db3",
+                "5b8365ed3f01e60b"
+            ]
+        ]
+    },
+    {
+        "id": "311edcfc634550b4",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "extract data",
+        "func": "// Extract the type of data from the topic\nlet dataType = msg.topic.split(\"/\")[1]; // Extracts the second part of the topic\n// Depending on the data type,  the value into the corresponding array\nif (dataType === \"humidity\") {\n    let humidity = msg.payload;\n    let humidityValues = flow.get(\"humidityValues\") || [];\n    humidityValues.push(humidity);\n    flow.set(\"humidityValues\", humidityValues);\n} else if (dataType === \"ctemp\") {\n    let temperature = msg.payload;\n    let tempValues = flow.get(\"tempValues\") || [];\n    tempValues.push(temperature);\n    flow.set(\"tempValues\", tempValues);\n} else if (dataType === \"cheatindex\") {\n    let heatIndex = msg.payload;\n    let heatIndexValues = flow.get(\"heatIndexValues\") || [];\n    heatIndexValues.push(heatIndex);\n    flow.set(\"heatIndexValues\", heatIndexValues);\n}\n\nreturn null; // Return null to indicate that no further processing is needed\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 510,
+        "y": 40,
+        "wires": [
+            [
+                "45fa3ed2538f6f71",
+                "fb01c0ae0fffa3eb"
+            ]
+        ]
+    },
+    {
+        "id": "8b202a7b3bbb512d",
+        "type": "inject",
+        "z": "de645dbbe3110559",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 510,
+        "y": 120,
+        "wires": [
+            [
+                "fb01c0ae0fffa3eb"
+            ]
+        ]
+    },
+    {
+        "id": "79c99b97a6173cf8",
+        "type": "inject",
+        "z": "de645dbbe3110559",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "60",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 650,
+        "y": 460,
+        "wires": [
+            [
+                "8171f9dd7b34c192"
+            ]
+        ]
+    },
+    {
+        "id": "fe2e0a802fd88fbb",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "Prepare ctemp",
+        "func": "msg.topic = msg.topic.split(\"/\")[1];\nmsg.payload = msg.payload > 30.0;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 680,
+        "wires": [
+            [
+                "1a7125dae87067cc"
+            ]
+        ]
+    },
+    {
+        "id": "b76596b2c828b0c0",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "Prepare humidity",
+        "func": "msg.topic = msg.topic.split(\"/\")[1];\nmsg.payload = msg.payload > 70;\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 760,
+        "wires": [
+            [
+                "1a7125dae87067cc"
+            ]
+        ]
+    },
+    {
+        "id": "2e05dd48393bdc0e",
+        "type": "sqlite",
+        "z": "de645dbbe3110559",
+        "mydb": "2fd713133d3f5d87",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "sensor_data",
+        "x": 1070,
+        "y": 360,
+        "wires": [
+            [
+                "6a783e9145fb0bfc"
+            ]
+        ]
+    },
+    {
+        "id": "aa36fc69e8b38db3",
+        "type": "sqlite",
+        "z": "de645dbbe3110559",
+        "mydb": "2fd713133d3f5d87",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "save_average_hourly_data",
+        "x": 1100,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d2e66d59ed893837",
+        "type": "ui_chart",
+        "z": "de645dbbe3110559",
+        "name": "Humidity",
+        "group": "7733d53245733664",
+        "order": 0,
+        "width": "6",
+        "height": "6",
+        "label": "Time-Humidity",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#ffffff",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 680,
+        "y": 220,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "36eea6a8405963be",
+        "type": "ui_chart",
+        "z": "de645dbbe3110559",
+        "name": "",
+        "group": "c9f961128be3fc00",
+        "order": 0,
+        "width": "6",
+        "height": "6",
+        "label": "Time-Temperature",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#fafafa",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 710,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fd45c8c633e00833",
+        "type": "ui_chart",
+        "z": "de645dbbe3110559",
+        "name": "",
+        "group": "c725aa7e9d5818d4",
+        "order": 0,
+        "width": "6",
+        "height": "6",
+        "label": "Time-Heat",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": true,
+        "ymin": "",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#ffffff",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "className": "",
+        "x": 690,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "fb144729775d2c5a",
+        "type": "ui_text",
+        "z": "de645dbbe3110559",
+        "group": "3e464a31fd0bad11",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Average Humidity",
+        "format": "{{msg.average.hum}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1110,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "ef07e56429e41ff4",
+        "type": "ui_text",
+        "z": "de645dbbe3110559",
+        "group": "3e464a31fd0bad11",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Average Temperature",
+        "format": "{{msg.average.temp}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1120,
+        "y": 920,
+        "wires": []
+    },
+    {
+        "id": "87d3772e569405b2",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "function 3",
+        "func": "msg.average = {\n    temp: \"NaN\",\n    index: \"NaN\",\n    hum: \"NaN\"\n};\n\nif (msg.topic.length >= 0) {\n    msg.average.temp = msg.payload[0].average_temp;\n    msg.average.index = msg.payload[0].average_heat_index;\n    msg.average.hum = msg.payload[0].average_humidity;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 900,
+        "y": 960,
+        "wires": [
+            [
+                "ef07e56429e41ff4",
+                "fb144729775d2c5a",
+                "37af0e8b4828dd66",
+                "6a05eadb7f7b8044"
+            ]
+        ]
+    },
+    {
+        "id": "3cb7f6bc3a254eb1",
+        "type": "inject",
+        "z": "de645dbbe3110559",
+        "name": "Repeat Hourly",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "3600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": 0.1,
+        "topic": "SELECT average_temp, average_heat_index, average_humidity FROM hourly_averages ORDER BY timestamp DESC LIMIT 1;",
+        "payload": "",
+        "payloadType": "date",
+        "x": 380,
+        "y": 960,
+        "wires": [
+            [
+                "bca925acc9e76640"
+            ]
+        ]
+    },
+    {
+        "id": "37af0e8b4828dd66",
+        "type": "ui_text",
+        "z": "de645dbbe3110559",
+        "group": "3e464a31fd0bad11",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Average Heat Index",
+        "format": "{{msg.average.index}}",
+        "layout": "row-spread",
+        "className": "",
+        "style": false,
+        "font": "",
+        "fontSize": 16,
+        "color": "#000000",
+        "x": 1120,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "fa5a0c72164bb3ae",
+        "type": "debug",
+        "z": "de645dbbe3110559",
+        "name": "debug 8",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 980,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "1a7125dae87067cc",
+        "type": "join",
+        "z": "de645dbbe3110559",
+        "name": "",
+        "mode": "custom",
+        "build": "object",
+        "property": "payload",
+        "propertyType": "msg",
+        "key": "topic",
+        "joiner": "\\n",
+        "joinerType": "str",
+        "accumulate": false,
+        "timeout": "",
+        "count": "2",
+        "reduceRight": false,
+        "reduceExp": "",
+        "reduceInit": "",
+        "reduceInitType": "",
+        "reduceFixup": "",
+        "x": 810,
+        "y": 720,
+        "wires": [
+            [
+                "fa5a0c72164bb3ae",
+                "a194e240bc44fbc1"
+            ]
+        ]
+    },
+    {
+        "id": "a194e240bc44fbc1",
+        "type": "function",
+        "z": "de645dbbe3110559",
+        "name": "Check",
+        "func": "if (msg.payload.humidity === true || msg.payload.ctemp === true) {\n    msg.payload = \"alert\";\n} else {\n    msg.payload = \"stopalert\";\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1010,
+        "y": 720,
+        "wires": [
+            [
+                "28aa1c9e2a4987b3",
+                "ca420cb1156179d5"
+            ]
+        ]
+    },
+    {
+        "id": "28aa1c9e2a4987b3",
+        "type": "mqtt out",
+        "z": "de645dbbe3110559",
+        "name": "Send alert",
+        "topic": "authIoTTestTopic/alerts",
+        "qos": "2",
+        "retain": "",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "930e75eab1ea7ac4",
+        "x": 1270,
+        "y": 720,
+        "wires": []
+    },
+    {
+        "id": "ca420cb1156179d5",
+        "type": "debug",
+        "z": "de645dbbe3110559",
+        "name": "debug 9",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1260,
+        "y": 780,
+        "wires": []
+    },
+    {
+        "id": "6a05eadb7f7b8044",
+        "type": "debug",
+        "z": "de645dbbe3110559",
+        "name": "debug 10",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1080,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "bca925acc9e76640",
+        "type": "sqlite",
+        "z": "de645dbbe3110559",
+        "mydb": "2fd713133d3f5d87",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "read_average_hourly_data",
+        "x": 640,
+        "y": 960,
+        "wires": [
+            [
+                "87d3772e569405b2",
+                "f04c0f48ab9728e7"
+            ]
+        ]
+    },
+    {
+        "id": "b38f850c7757bb4a",
+        "type": "ui_spacer",
+        "z": "de645dbbe3110559",
+        "name": "spacer",
+        "group": "f125a901f7dfe3d6",
+        "order": 1,
+        "width": 1,
+        "height": 1
+    },
+    {
+        "id": "930e75eab1ea7ac4",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "test.mosquitto.org",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "5",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "2fd713133d3f5d87",
+        "type": "sqlitedb",
+        "db": "C:\\Users\\Administrator\\nrdb\\iot_db.db",
+        "mode": "RWC"
+    },
+    {
+        "id": "7733d53245733664",
+        "type": "ui_group",
+        "name": "Humidity",
+        "tab": "05c1d287a500c1df",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "c9f961128be3fc00",
+        "type": "ui_group",
+        "name": "Temperature",
+        "tab": "05c1d287a500c1df",
+        "order": 2,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "c725aa7e9d5818d4",
+        "type": "ui_group",
+        "name": "Heat",
+        "tab": "05c1d287a500c1df",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "3e464a31fd0bad11",
+        "type": "ui_group",
+        "name": "Average",
+        "tab": "05c1d287a500c1df",
+        "order": 4,
+        "disp": true,
+        "width": "6",
+        "collapse": false,
+        "className": ""
+    },
+    {
+        "id": "05c1d287a500c1df",
+        "type": "ui_tab",
+        "name": "IoT Auth",
+        "icon": "dashboard",
+        "disabled": false,
+        "hidden": false
+    }
+]
